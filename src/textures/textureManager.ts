@@ -1,4 +1,5 @@
 import { getBlockVisualMeta } from './blockColors';
+import { resolveBlockTexture, getTextureCandidateUrls } from './textureMapping';
 
 type TextureState = 'loading' | 'loaded' | 'error';
 
@@ -8,8 +9,8 @@ interface TextureEntry {
 }
 
 /**
- * High-performance texture manager with CDN streaming, memory caching,
- * and procedural pixel-art fallback rendering.
+ * High-performance texture manager with local caching, CDN streaming,
+ * candidate fallback chains, and pixel-perfect rendering.
  */
 class TextureManager {
   private cache = new Map<string, TextureEntry>();
@@ -31,23 +32,32 @@ class TextureManager {
   }
 
   /**
-   * Resolves block ID to a texture name.
-   * e.g. "minecraft:oak_planks" -> "oak_planks"
+   * Resolves block ID to a canonical texture key.
    */
-  private cleanName(blockId: string): string {
-    const raw = blockId.split('[')[0];
-    return raw.replace(/^minecraft:/, '');
+  public getResolvedTextureName(blockId: string): string {
+    return resolveBlockTexture(blockId);
   }
 
   /**
-   * CDN URLs to try for official 1.20.2 textures.
+   * Returns list of candidate URLs for a block.
    */
-  private getTextureUrls(blockId: string): string[] {
-    const name = this.cleanName(blockId);
-    return [
-      `https://cdn.jsdelivr.net/gh/PrismarineJS/minecraft-assets@master/data/1.20.2/blocks/${name}.png`,
-      `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.2/blocks/${name}.png`,
-    ];
+  private getCandidateUrls(blockId: string): string[] {
+    const primaryName = resolveBlockTexture(blockId);
+    const urls = getTextureCandidateUrls(primaryName);
+
+    // If block is a special variant (like stairs, slab, wall, door, bed, chest),
+    // add secondary fallback URLs
+    const clean = blockId.split('[')[0].replace(/^minecraft:/, '');
+    if (clean.includes('chest')) {
+      urls.push(...getTextureCandidateUrls('oak_planks'));
+    } else if (clean.endsWith('_bed') || clean.endsWith('_carpet')) {
+      urls.push(...getTextureCandidateUrls('white_wool'));
+    } else if (clean.endsWith('_stairs') || clean.endsWith('_slab')) {
+      urls.push(...getTextureCandidateUrls('stone'));
+      urls.push(...getTextureCandidateUrls('oak_planks'));
+    }
+
+    return urls;
   }
 
   /**
@@ -56,10 +66,10 @@ class TextureManager {
   public loadTexture(blockId: string): void {
     if (this.isAir(blockId)) return;
 
-    const key = this.cleanName(blockId);
+    const key = this.getResolvedTextureName(blockId);
     if (this.cache.has(key)) return;
 
-    const urls = this.getTextureUrls(blockId);
+    const urls = this.getCandidateUrls(blockId);
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
@@ -105,7 +115,7 @@ class TextureManager {
    * Returns a procedural 16x16 canvas fallback for this block.
    */
   public getProceduralTexture(blockId: string): HTMLCanvasElement {
-    const key = this.cleanName(blockId);
+    const key = blockId.split('[')[0].replace(/^minecraft:/, '');
     if (this.proceduralCache.has(key)) {
       return this.proceduralCache.get(key)!;
     }
@@ -117,28 +127,36 @@ class TextureManager {
     const ctx = canvas.getContext('2d');
 
     if (ctx) {
-      // Base fill
+      // Base fill with block dominant color
       ctx.fillStyle = meta.color;
       ctx.fillRect(0, 0, 16, 16);
 
-      // Subtle 3D Minecraft beveled border
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      // Procedural pixel texture variation
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(2, 2, 4, 4);
+      ctx.fillRect(10, 8, 4, 4);
+      ctx.fillRect(4, 11, 3, 3);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.fillRect(8, 2, 4, 3);
+      ctx.fillRect(2, 8, 3, 3);
+
+      // 3D Minecraft beveled border
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.fillRect(0, 0, 16, 1);
       ctx.fillRect(0, 0, 1, 16);
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.fillRect(0, 15, 16, 1);
       ctx.fillRect(15, 0, 1, 16);
 
-      // Centered block initials if space permits
+      // Centered block initials in pixel font
       if (meta.initials) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.font = 'bold 7px Silkscreen, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        // Drop shadow
         ctx.fillText(meta.initials, 8.5, 9);
-        // Foreground
+
         ctx.fillStyle = '#ffffff';
         ctx.fillText(meta.initials, 8, 8.5);
       }
@@ -161,7 +179,7 @@ class TextureManager {
   ): void {
     if (this.isAir(blockId)) return;
 
-    const key = this.cleanName(blockId);
+    const key = this.getResolvedTextureName(blockId);
     const entry = this.cache.get(key);
 
     ctx.save();
@@ -169,7 +187,6 @@ class TextureManager {
       ctx.globalAlpha = opacity;
     }
 
-    // High quality pixelated scaling
     ctx.imageSmoothingEnabled = false;
 
     if (entry && entry.state === 'loaded' && entry.img) {
@@ -179,7 +196,6 @@ class TextureManager {
       if (!entry) {
         this.loadTexture(blockId);
       }
-      // Render procedural fallback
       const proceduralCanvas = this.getProceduralTexture(blockId);
       ctx.drawImage(proceduralCanvas, x, y, size, size);
     }
@@ -196,7 +212,7 @@ class TextureManager {
    * Get image source url or data uri for UI previews (e.g. BOM icons).
    */
   public getPreviewUrl(blockId: string): string {
-    const key = this.cleanName(blockId);
+    const key = this.getResolvedTextureName(blockId);
     const entry = this.cache.get(key);
     if (entry && entry.state === 'loaded' && entry.img) {
       return entry.img.src;
