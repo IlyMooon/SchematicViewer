@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "tsx test/suite.ts",
+    "server:start": "./server.sh start",
+    "server:stop": "./server.sh stop",
+    "server:status": "./server.sh status",
     "lint": "oxlint",
     "preview": "vite preview"
   },

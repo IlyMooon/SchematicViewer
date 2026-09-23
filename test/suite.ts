@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import { parseLegacySchematic } from '../src/parsers/legacySchematic';
 import { parseSpongeSchematic } from '../src/parsers/spongeSchem';
 import { parseLitematic } from '../src/parsers/litematic';
+import { parseVanillaStructure } from '../src/parsers/vanillaStructure';
 import { legacyToModernBlock } from '../src/parsers/legacyBlockMap';
 import { parseSchematicFile } from '../src/parsers/unifiedParser';
 import { NBTData, write } from 'nbtify';
@@ -24,8 +25,6 @@ async function runTestSuite() {
   // TEST 2: Parsing .schematic legacy (MCEdit)
   console.log('2. Test: Parsing format .schematic (MCEdit legacy)');
   const W = 2, H = 2, L = 2; // 8 blocks
-  // Block indices: (y * L + z) * W + x
-  // Let (0, 0, 0) = Stone (1), (0, 0, 1) = Oak Planks (5)
   const blocks = new Int8Array(W * H * L);
   blocks[0] = 1; // Stone
   blocks[1] = 5; // Oak Planks
@@ -47,22 +46,15 @@ async function runTestSuite() {
   assert.strictEqual(parsedSchematic.totalSolidBlocks, 2);
   console.log('   ✅ Parsing .schematic legacy et normalisation 3D grid validés.');
 
-  // TEST 3: Parsing .schem Sponge (VarInt + Palette)
-  console.log('3. Test: Parsing format .schem (Sponge v1/v2/v3)');
-  // Palette: air=0, stone=1, red_wool=2
+  // TEST 3: Parsing .schem Sponge v1/v2 (VarInt + Palette at root)
+  console.log('3. Test: Parsing format .schem (Sponge v1/v2)');
   const spongePalette = {
     'minecraft:air': 0,
     'minecraft:stone': 1,
     'minecraft:red_wool': 2,
   };
-  // Sponge index = x + z*width + y*width*length
-  // For 2x2x2: 8 blocks
-  // Block 0: x=0, z=0, y=0 -> 1 (stone)
-  // Block 1: x=1, z=0, y=0 -> 2 (red_wool)
-  // Others: 0 (air)
-  // VarInt byte encoding: 1, 2, 0, 0, 0, 0, 0, 0
   const blockData = new Int8Array([1, 2, 0, 0, 0, 0, 0, 0]);
-  const spongeNBT = {
+  const spongeV2NBT = {
     Width: 2,
     Height: 2,
     Length: 2,
@@ -71,21 +63,81 @@ async function runTestSuite() {
     BlockData: blockData,
   };
 
-  const parsedSponge = parseSpongeSchematic(spongeNBT, 'test_sponge.schem');
-  assert.strictEqual(parsedSponge.width, 2);
-  assert.strictEqual(parsedSponge.height, 2);
-  assert.strictEqual(parsedSponge.grid[0][0][0], 'minecraft:stone');
-  assert.strictEqual(parsedSponge.grid[0][0][1], 'minecraft:red_wool');
-  assert.strictEqual(parsedSponge.totalSolidBlocks, 2);
-  console.log('   ✅ Parsing .schem Sponge et décodage VarInt validés.');
+  const parsedSpongeV2 = parseSpongeSchematic(spongeV2NBT, 'test_sponge_v2.schem');
+  assert.strictEqual(parsedSpongeV2.width, 2);
+  assert.strictEqual(parsedSpongeV2.height, 2);
+  assert.strictEqual(parsedSpongeV2.grid[0][0][0], 'minecraft:stone');
+  assert.strictEqual(parsedSpongeV2.grid[0][0][1], 'minecraft:red_wool');
+  assert.strictEqual(parsedSpongeV2.totalSolidBlocks, 2);
+  console.log('   ✅ Parsing .schem Sponge v1/v2 validé.');
 
-  // TEST 4: Parsing .litematic (BigInt Bit-unpacking)
-  console.log('4. Test: Parsing format .litematic (Litematica)');
-  // Palette: 0=air, 1=diamond_block, 2=gold_block
-  // Palette size = 3 -> bitsPerBlock = Math.max(2, ceil(log2(3))) = 2 bits
-  // 8 blocks for 2x2x2 volume
-  // Block 0: 1 (diamond), Block 1: 2 (gold), rest 0
-  // Packed 64-bit BigInt: (1n) | (2n << 2n) = 1 | 8 = 9n
+  // TEST 4: Parsing .schem Sponge v3 (Nested Blocks.Palette & Blocks.Data)
+  console.log('4. Test: Parsing format .schem Sponge v3 (Blocks.Palette & Blocks.Data)');
+  const spongeV3NBT = {
+    Width: 2,
+    Height: 2,
+    Length: 2,
+    Version: 3,
+    DataVersion: 3465,
+    Blocks: {
+      Palette: {
+        'minecraft:air': 0,
+        'minecraft:deepslate': 1,
+        'minecraft:emerald_block': 2,
+      },
+      Data: new Int8Array([1, 2, 0, 0, 0, 0, 0, 0]),
+    },
+  };
+
+  const parsedSpongeV3 = parseSpongeSchematic(spongeV3NBT, 'test_sponge_v3.schem');
+  assert.strictEqual(parsedSpongeV3.width, 2);
+  assert.strictEqual(parsedSpongeV3.height, 2);
+  assert.strictEqual(parsedSpongeV3.grid[0][0][0], 'minecraft:deepslate');
+  assert.strictEqual(parsedSpongeV3.grid[0][0][1], 'minecraft:emerald_block');
+  assert.strictEqual(parsedSpongeV3.totalSolidBlocks, 2);
+  console.log('   ✅ Parsing .schem Sponge v3 (Blocks.Palette) résolu et validé !');
+
+  // TEST 5: Legacy MCEdit schematic with .schem file extension
+  console.log('5. Test: Fichier legacy MCEdit ayant l\'extension .schem');
+  const legacyWithSchemExtNBT = {
+    Width: 2,
+    Height: 2,
+    Length: 2,
+    Materials: 'Alpha',
+    Blocks: blocks,
+    Data: new Int8Array(W * H * L),
+  };
+  const gzippedLegacy = gzipSync(await write(new NBTData(legacyWithSchemExtNBT, { name: 'Schematic' })));
+  const parsedLegacySchem = await parseSchematicFile(gzippedLegacy, 'renamed_legacy.schem');
+  assert.strictEqual(parsedLegacySchem.grid[0][0][0], 'minecraft:stone');
+  assert.strictEqual(parsedLegacySchem.grid[0][0][1], 'minecraft:oak_planks');
+  console.log('   ✅ Fichier legacy avec extension .schem correctement redirigé sans erreur Palette !');
+
+  // TEST 6: Vanilla Minecraft Structure Template format (.nbt or renamed .schem)
+  console.log('6. Test: Format Structure Template Vanilla Minecraft');
+  const vanillaStructureNBT = {
+    size: [2, 2, 2],
+    palette: [
+      { Name: 'minecraft:air' },
+      { Name: 'minecraft:obsidian' },
+      { Name: 'minecraft:gold_block' },
+    ],
+    blocks: [
+      { pos: [0, 0, 0], state: 1 },
+      { pos: [1, 0, 0], state: 2 },
+    ],
+  };
+  const gzippedVanilla = gzipSync(await write(new NBTData(vanillaStructureNBT, { name: '' })));
+  const parsedVanilla = await parseSchematicFile(gzippedVanilla, 'structure_template.schem');
+  assert.strictEqual(parsedVanilla.width, 2);
+  assert.strictEqual(parsedVanilla.height, 2);
+  assert.strictEqual(parsedVanilla.grid[0][0][0], 'minecraft:obsidian');
+  assert.strictEqual(parsedVanilla.grid[0][0][1], 'minecraft:gold_block');
+  assert.strictEqual(parsedVanilla.totalSolidBlocks, 2);
+  console.log('   ✅ Format Structure Vanilla (.nbt / .schem) supporté et validé !');
+
+  // TEST 7: Parsing .litematic (BigInt Bit-unpacking)
+  console.log('7. Test: Parsing format .litematic (Litematica)');
   const litematicNBT = {
     MinecraftDataVersion: 3465,
     Metadata: {
@@ -115,28 +167,16 @@ async function runTestSuite() {
   assert.strictEqual(parsedLitematic.totalSolidBlocks, 2);
   console.log('   ✅ Parsing .litematic et décompactage binaire BigInt validés.');
 
-  // TEST 5: Unified Parser with compressed NBT file buffer
-  console.log('5. Test: Parser unifié avec décompression NBT complète');
-  const nbtObj = new NBTData(spongeNBT, { name: 'Schematic' });
-  const rawBytes = await write(nbtObj);
-  const gzipped = gzipSync(rawBytes);
-
-  const unifiedResult = await parseSchematicFile(gzipped, 'my_house.schem');
-  assert.strictEqual(unifiedResult.format, 'schem');
-  assert.strictEqual(unifiedResult.grid[0][0][0], 'minecraft:stone');
-  assert.strictEqual(unifiedResult.grid[0][0][1], 'minecraft:red_wool');
-  console.log('   ✅ Parser unifié et détection automatique validés.');
-
-  // TEST 6: Stack and Shulker calculations
-  console.log('6. Test: Calculateur de Stacks et Boîtes de Shulker');
-  const stoneItem = unifiedResult.materials.find(m => m.id === 'minecraft:stone');
+  // TEST 8: Stack and Shulker calculations
+  console.log('8. Test: Calculateur de Stacks et Boîtes de Shulker');
+  const stoneItem = parsedSchematic.materials.find(m => m.id === 'minecraft:stone');
   assert.ok(stoneItem);
   assert.strictEqual(stoneItem.count, 1);
   assert.strictEqual(stoneItem.stacks, 0);
   assert.strictEqual(stoneItem.remainder, 1);
   console.log('   ✅ Calculateur de nomenclature validé.');
 
-  console.log('\n🎉 TOUS LES TESTS SONT PASSÉS AVEC SUCCÈS !');
+  console.log('\n🎉 TOUS LES 8 TESTS SONT PASSÉS AVEC SUCCÈS !');
 }
 
 runTestSuite().catch((err) => {
