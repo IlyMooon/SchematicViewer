@@ -20,6 +20,15 @@ export const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({
   const [sortAsc, setSortAsc] = useState(false);
   const [scope, setScope] = useState<'all' | 'layer'>('all');
   const [copied, setCopied] = useState(false);
+  const [, setTextureVersion] = useState(0);
+
+  // Subscribe to texture load notifications to update BOM thumbnails
+  React.useEffect(() => {
+    const unsub = textureManager.subscribe(() => {
+      setTextureVersion((v) => v + 1);
+    });
+    return unsub;
+  }, []);
 
   // Compute BOM based on scope (Global or Current Layer)
   const items: BOMItem[] = useMemo(() => {

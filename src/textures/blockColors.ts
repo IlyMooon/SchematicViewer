@@ -173,6 +173,42 @@ export const BLOCK_META_MAP: Record<string, BlockVisualMeta> = {
   'minecraft:water': { color: '#2c5be8', nameFr: 'Eau', nameEn: 'Water', initials: 'W' },
   'minecraft:lava': { color: '#d94b0d', nameFr: 'Lave', nameEn: 'Lava', initials: 'L' },
 
+  // 26.x & 26.3 Wilderness Bound Blocks
+  'minecraft:poplar_planks': { color: '#d49b42', nameFr: 'Planches de peuplier', nameEn: 'Poplar Planks', initials: 'PP' },
+  'minecraft:poplar_log': { color: '#a08d6c', nameFr: 'Bûche de peuplier', nameEn: 'Poplar Log', initials: 'PL' },
+  'minecraft:poplar_wood': { color: '#a08d6c', nameFr: 'Bois de peuplier', nameEn: 'Poplar Wood', initials: 'PW' },
+  'minecraft:poplar_leaves': { color: '#e07a1f', nameFr: 'Feuilles de peuplier', nameEn: 'Poplar Leaves', initials: 'PL' },
+  'minecraft:poplar_stairs': { color: '#d49b42', nameFr: 'Escalier en peuplier', nameEn: 'Poplar Stairs', initials: 'PS' },
+  'minecraft:poplar_slab': { color: '#d49b42', nameFr: 'Dalle en peuplier', nameEn: 'Poplar Slab', initials: 'PS' },
+  'minecraft:poplar_door': { color: '#d49b42', nameFr: 'Porte en peuplier', nameEn: 'Poplar Door', initials: 'PD' },
+  'minecraft:poplar_trapdoor': { color: '#d49b42', nameFr: 'Trappe en peuplier', nameEn: 'Poplar Trapdoor', initials: 'PT' },
+  'minecraft:poplar_fence': { color: '#d49b42', nameFr: 'Barrière en peuplier', nameEn: 'Poplar Fence', initials: 'PF' },
+  'minecraft:straw_bed': { color: '#d7af41', nameFr: 'Lit de paille', nameEn: 'Straw Bed', initials: 'SB' },
+  'minecraft:shelf_mushroom': { color: '#915a2d', nameFr: 'Champignon de tronc', nameEn: 'Shelf Mushroom', initials: 'SM' },
+  'minecraft:red_shrub': { color: '#c32823', nameFr: 'Arbuste rouge', nameEn: 'Red Shrub', initials: 'RS' },
+  'minecraft:cushion': { color: '#eaeaea', nameFr: 'Coussin', nameEn: 'Cushion', initials: 'CS' },
+  'minecraft:white_cushion': { color: '#eaeaea', nameFr: 'Coussin blanc', nameEn: 'White Cushion', initials: 'WC' },
+  'minecraft:red_cushion': { color: '#a12722', nameFr: 'Coussin rouge', nameEn: 'Red Cushion', initials: 'RC' },
+
+  // Pale Garden & Resin
+  'minecraft:pale_oak_planks': { color: '#e2ded7', nameFr: 'Planches de chêne pâle', nameEn: 'Pale Oak Planks', initials: 'PP' },
+  'minecraft:pale_oak_log': { color: '#53504d', nameFr: 'Bûche de chêne pâle', nameEn: 'Pale Oak Log', initials: 'PL' },
+  'minecraft:pale_oak_leaves': { color: '#6c706d', nameFr: 'Feuilles de chêne pâle', nameEn: 'Pale Oak Leaves', initials: 'PL' },
+  'minecraft:pale_oak_stairs': { color: '#e2ded7', nameFr: 'Escalier en chêne pâle', nameEn: 'Pale Oak Stairs', initials: 'PS' },
+  'minecraft:pale_oak_slab': { color: '#e2ded7', nameFr: 'Dalle en chêne pâle', nameEn: 'Pale Oak Slab', initials: 'PS' },
+  'minecraft:resin_bricks': { color: '#e65c2b', nameFr: 'Briques de résine', nameEn: 'Resin Bricks', initials: 'RB' },
+  'minecraft:resin_block': { color: '#f06a33', nameFr: 'Bloc de résine', nameEn: 'Block of Resin', initials: 'RB' },
+  'minecraft:creaking_heart': { color: '#a66a38', nameFr: 'Cœur grinçant', nameEn: 'Creaking Heart', initials: 'CH' },
+
+  // 1.21 / 26.x Utility & Trial Chambers
+  'minecraft:crafter': { color: '#7e685a', nameFr: 'Artisan', nameEn: 'Crafter', initials: 'CR' },
+  'minecraft:copper_bulb': { color: '#bf6c4f', nameFr: 'Ampoule de cuivre', nameEn: 'Copper Bulb', initials: 'CB' },
+  'minecraft:copper_grate': { color: '#9f573c', nameFr: 'Grille de cuivre', nameEn: 'Copper Grate', initials: 'CG' },
+  'minecraft:tuff_bricks': { color: '#4b4b47', nameFr: 'Briques de tuf', nameEn: 'Tuff Bricks', initials: 'TB' },
+  'minecraft:trial_spawner': { color: '#4d4039', nameFr: "Générateur d'épreuve", nameEn: 'Trial Spawner', initials: 'TS' },
+  'minecraft:vault': { color: '#3d3733', nameFr: 'Chambre forte', nameEn: 'Vault', initials: 'VT' },
+  'minecraft:heavy_core': { color: '#5e5c66', nameFr: 'Noyau lourd', nameEn: 'Heavy Core', initials: 'HC' },
+
   // Air
   'minecraft:air': { color: '#00000000', nameFr: 'Air', nameEn: 'Air', initials: '' },
   'minecraft:cave_air': { color: '#00000000', nameFr: 'Air de caverne', nameEn: 'Cave Air', initials: '' },

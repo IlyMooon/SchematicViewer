@@ -213,11 +213,11 @@ class TextureManager {
    */
   public getPreviewUrl(blockId: string): string {
     const key = this.getResolvedTextureName(blockId);
+    this.loadTexture(blockId);
     const entry = this.cache.get(key);
-    if (entry && entry.state === 'loaded' && entry.img) {
+    if (entry && entry.img && entry.img.src && entry.state !== 'error') {
       return entry.img.src;
     }
-    this.loadTexture(blockId);
     return this.getProceduralTexture(blockId).toDataURL();
   }
 }
