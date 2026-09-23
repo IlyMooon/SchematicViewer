@@ -1,0 +1,256 @@
+.bom-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 340px;
+  min-width: 300px;
+  background-color: #c6c6c6;
+  border-left: 2px solid #555555;
+  box-shadow: inset 2px 0 0 #ffffff;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.bom-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bom-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-gold-icon {
+  color: #ffaa00;
+}
+
+.bom-title {
+  margin: 0;
+  font-size: 15px;
+  font-family: 'Silkscreen', monospace;
+  color: #373737;
+  text-shadow: 1px 1px 0px #ffffff;
+}
+
+/* Scope Toggle Tabs */
+.bom-scope-toggle {
+  display: flex;
+  background: #8b8b8b;
+  padding: 2px;
+  border: 2px solid #373737;
+  border-bottom-color: #ffffff;
+  border-right-color: #ffffff;
+}
+
+.mc-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  color: #dddddd;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.mc-tab.active {
+  background: #c6c6c6;
+  color: #1e1e1e;
+  border-top: 2px solid #ffffff;
+  border-left: 2px solid #ffffff;
+  border-right: 2px solid #555555;
+  border-bottom: 2px solid #555555;
+  font-weight: bold;
+}
+
+/* Summary Box */
+.bom-summary-box {
+  background: #373737;
+  border: 2px solid #222222;
+  border-bottom-color: #555555;
+  border-right-color: #555555;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #aaaaaa;
+}
+
+.summary-row strong {
+  color: #ffffff;
+}
+
+.summary-row .text-gold {
+  color: #ffff55;
+  font-size: 13px;
+}
+
+.summary-stack-calc {
+  color: #ffaa00;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.shulker-badge {
+  color: #d67fff;
+  font-weight: bold;
+}
+
+/* Toolbar */
+.bom-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.bom-search-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.search-icon {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888888;
+}
+
+.bom-search-input {
+  width: 100%;
+  padding-left: 26px;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+
+/* List */
+.bom-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+.bom-empty {
+  padding: 24px;
+  text-align: center;
+  color: #777777;
+  font-size: 12px;
+}
+
+.bom-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #8b8b8b;
+  border: 2px solid #373737;
+  border-bottom-color: #ffffff;
+  border-right-color: #ffffff;
+  padding: 6px;
+  transition: transform 0.05s;
+}
+
+.bom-item-row:hover {
+  background: #9b9b9b;
+}
+
+.bom-slot-icon {
+  width: 32px;
+  height: 32px;
+  background: #373737;
+  border: 2px solid #222222;
+  border-bottom-color: #555555;
+  border-right-color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.block-pixel-thumb {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.bom-item-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bom-item-names {
+  display: flex;
+  flex-direction: column;
+}
+
+.bom-name-fr {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 0px #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bom-name-en {
+  font-size: 10px;
+  color: #dddddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bom-stack-breakdown {
+  display: flex;
+  gap: 4px;
+}
+
+.badge-shulker {
+  font-size: 10px;
+  color: #e6a8ff;
+  font-family: monospace;
+}
+
+.badge-stacks {
+  font-size: 10px;
+  color: #ffff55;
+  font-family: monospace;
+}
+
+.badge-exact {
+  font-size: 10px;
+  color: #aaaaaa;
+  font-family: monospace;
+}
+
+.bom-item-count {
+  font-family: 'Silkscreen', monospace;
+  font-size: 14px;
+  color: #ffff55;
+  text-shadow: 1px 1px 0px #373737;
+  padding: 0 4px;
+}
